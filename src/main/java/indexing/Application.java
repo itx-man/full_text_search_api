@@ -5,9 +5,9 @@ public class Application {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		ReviewProcessor json = new ReviewProcessor("rev.json");
-		json.readAndIndex();
-		System.out.println("Finished Indexing reviews");
+		JsonProcessor jp = new JsonProcessor("bookReviews.json");
+		jp.index();
+		System.out.println("Indexed all Documents");
 	}
 
 }

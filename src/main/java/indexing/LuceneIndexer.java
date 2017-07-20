@@ -15,29 +15,26 @@ import org.apache.lucene.index.Term;
 
 public class LuceneIndexer {
 	
+	IndexWriter iw;
+	
 	public LuceneIndexer() {
 		//
 	}
 	
-	@SuppressWarnings("finally")
-	public IndexWriter getIndexWriter(String indexPath) {
+	public void initIndexWriter(String indexPath) {
 		try {
 			Directory idxDir = FSDirectory.open(Paths.get(indexPath)); 
 			Analyzer analyzer = new StandardAnalyzer();
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-			IndexWriter iw = new IndexWriter(idxDir, iwc);
-			return iw;
+			iw = new IndexWriter(idxDir, iwc);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		finally {
-			return null;
-		}
 	}
 	
-	public void close(IndexWriter iw) {
+	public void close() {
 		try {
 			iw.close();
 		}
@@ -46,15 +43,15 @@ public class LuceneIndexer {
 		}
 	}
 	
-	public void addDocument(IndexWriter iw, Document d) throws IOException {
+	public void addDocument(Document d) throws IOException {
 		iw.addDocument(d);
 	}
 
-	public void upsertDocument(IndexWriter iw, Document d, Term t) throws IOException {
+	public void updateDocument(Document d, Term t) throws IOException {
 		iw.updateDocument(t, d);
 	}
 	
-	public void commit(IndexWriter iw) throws IOException {
+	public void commit() throws IOException {
 		iw.commit();
 	}
 

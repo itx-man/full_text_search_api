@@ -8,9 +8,11 @@ import org.json.simple.parser.JSONParser;
 public class ReviewProcessor {
 	
 	String fileName;
+	Indexer docIndexer;
 	
 	public ReviewProcessor(String fileName) {
 		this.fileName = fileName;
+		docIndexer = new Indexer();
 	}
 	
 	public void readAndIndex() {
@@ -34,7 +36,7 @@ public class ReviewProcessor {
 				//Long votes = (Long) h.get(1);
 
 				AmazonReview azReview = new AmazonReview(reviewerID, reviewerName, reviewText, reviewSummary, reviewTime, rating);
-				
+				docIndexer.indexDoc(azReview);
  			}
 			
 		}

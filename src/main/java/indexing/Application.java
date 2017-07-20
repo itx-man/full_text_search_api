@@ -7,6 +7,7 @@ public class Application {
 		
 		ReviewProcessor json = new ReviewProcessor("rev.json");
 		json.readAndIndex();
+		System.out.println("Finished Indexing reviews");
 	}
 
 }

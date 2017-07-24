@@ -70,7 +70,7 @@ public class JsonProcessor {
 	public Document createDocument(Review r) {
 
 		Document doc = new Document();
-		doc.add(new StringField("docID", r.docID, Field.Store.NO));
+		doc.add(new StringField("docID", r.docID, Field.Store.YES));
 		doc.add(new StringField("rID", r.rID, Field.Store.YES));
 		doc.add(new StringField("rName", r.rName, Field.Store.YES));
 		doc.add(new TextField("rSummary", r.rSummary, Field.Store.YES));
@@ -80,7 +80,7 @@ public class JsonProcessor {
 		FieldType rText = new FieldType();
 		rText.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
 		rText.setTokenized(true);
-		rText.setStored(false);
+		rText.setStored(true);
 		rText.setStoreTermVectors(true);
 
 		doc.add(new Field("rText", r.rText, rText));

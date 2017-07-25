@@ -7,5 +7,20 @@
 	<classpathentry kind="lib" path="/home/karandalvi/Downloads/lucene-6.6.0/demo/lucene-demo-6.6.0.jar"/>
 	<classpathentry kind="lib" path="/home/karandalvi/Downloads/lucene-6.6.0/queryparser/lucene-queryparser-6.6.0.jar"/>
 	<classpathentry kind="lib" path="/home/karandalvi/Downloads/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solr-solrj-6.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/commons-io-2.5.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/commons-math3-3.4.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/httpclient-4.4.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/httpcore-4.4.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/httpmime-4.4.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/jcl-over-slf4j-1.7.7.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/noggit-0.6.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/slf4j-api-1.7.7.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/stax2-api-3.1.4.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/woodstox-core-asl-4.4.1.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/dist/solrj-lib/zookeeper-3.4.10.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/server/lib/ext/slf4j-api-1.7.7.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/server/lib/ext/slf4j-log4j12-1.7.7.jar"/>
+	<classpathentry kind="lib" path="/home/karandalvi/solr-6.6.0/server/lib/ext/log4j-1.2.17.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

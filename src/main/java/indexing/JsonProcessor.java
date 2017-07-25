@@ -15,15 +15,20 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.Term;
+import org.apache.solr.common.SolrInputDocument;
 
 public class JsonProcessor {
 	
 	String filename;
 	LuceneIndexer li;
+	IndexUsingSolr solr;
 	
 	public JsonProcessor (String filename) {
 		this.filename = filename;
 		li = new LuceneIndexer();
+		solr = new IndexUsingSolr(main.java.constants.Constants.solrHost, 
+								  main.java.constants.Constants.solrPort,
+								  main.java.constants.Constants.solrReviewsCore);
 	}
 	
 	public void index() {
@@ -53,13 +58,18 @@ public class JsonProcessor {
 					rName = "defaultUser";
 				
 				Review r = new Review(docID, rID, rName, rSummary, rText, rTime, rStars);
-				Document doc = createDocument(r);
+				Document doc = createLuceneDocument(r);
 				Term t = new Term("docID", doc.get("docID"));
 				
 				li.updateDocument(doc, t);
+				
+				SolrInputDocument solrDoc = createSolrDocument(r);
+				solr.addDocument(solrDoc);
 			}
 			
 			li.close();
+			solr.commit();
+			solr.close();
 			br.close();
 		}
 		catch(Exception e){
@@ -67,7 +77,7 @@ public class JsonProcessor {
 		}
 	}
 	
-	public Document createDocument(Review r) {
+	public Document createLuceneDocument(Review r) {
 
 		Document doc = new Document();
 		doc.add(new StringField("docID", r.docID, Field.Store.YES));
@@ -87,5 +97,19 @@ public class JsonProcessor {
 		
 		return doc;
 		
+	}
+	
+	public SolrInputDocument createSolrDocument(Review r) {
+		
+		SolrInputDocument doc = new SolrInputDocument();
+		doc.addField("docID", r.docID);
+		doc.addField("rID", r.rID);
+		doc.addField("rName", r.rName);
+		doc.addField("rSummary", r.rSummary);
+		doc.addField("rText", r.rText);
+		doc.addField("rTime", r.rTime);
+		doc.addField("rStars", r.rStars);
+		
+		return doc;
 	}
 }

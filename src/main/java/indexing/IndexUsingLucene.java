@@ -13,11 +13,11 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 
-public class LuceneIndexer {
+public class IndexUsingLucene {
 	
 	IndexWriter iw;
 	
-	public LuceneIndexer() {
+	public IndexUsingLucene() {
 		//
 	}
 	

@@ -20,12 +20,12 @@ import org.apache.solr.common.SolrInputDocument;
 public class JsonProcessor {
 	
 	String filename;
-	LuceneIndexer li;
+	IndexUsingLucene li;
 	IndexUsingSolr solr;
 	
 	public JsonProcessor (String filename) {
 		this.filename = filename;
-		li = new LuceneIndexer();
+		li = new IndexUsingLucene();
 		solr = new IndexUsingSolr(main.java.constants.Constants.solrHost, 
 								  main.java.constants.Constants.solrPort,
 								  main.java.constants.Constants.solrReviewsCore);

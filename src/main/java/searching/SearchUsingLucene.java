@@ -107,6 +107,104 @@ public class SearchUsingLucene {
 		return resultSet;
 	}
 	
+	public List<ScoreDoc> andResults(List<List<ScoreDoc>> r) {
+		
+		if (r.size() == 0)
+			return new ArrayList<ScoreDoc>();
+		else if (r.size() == 1) 
+			return r.get(0);
+		
+		List<ScoreDoc> resultSet = r.get(0);
+				
+		for (int j=1; j<r.size(); j++) {
+			resultSet = andResults(resultSet, r.get(j));
+		}
+		
+		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
+			@Override
+			public int compare(ScoreDoc s1, ScoreDoc s2) {
+				if (s1.score < s2.score)
+					return -1;
+				else if (s1.score > s2.score)
+					return 1;
+				else
+					return 0;
+			
+			}
+		}));
+		
+		return resultSet;
+	}
+	
+	public List<ScoreDoc> orResults(List<ScoreDoc> r1, List<ScoreDoc> r2) {
+		
+		Map<Integer, Float> m = new HashMap<>();
+		List<ScoreDoc> resultSet = new ArrayList<>();
+		
+		if (r1.size() > r2.size()) {
+			List<ScoreDoc> t = r1;
+			r1 = r2;
+			r2 = t;
+		}
+		
+		for (int i=0; i<r1.size(); i++) {
+			m.put(r1.get(i).doc, r1.get(i).score);
+		}
+		
+		for (int i=0; i<r2.size(); i++) {
+			m.put(r2.get(i).doc, m.getOrDefault(r2.get(i).doc, (float) 0) + r2.get(i).score);
+		}
+		
+		for (Map.Entry<Integer, Float> e  : m.entrySet()) {
+			ScoreDoc s = new ScoreDoc(e.getKey(), e.getValue());
+			resultSet.add(s);
+		}
+		
+		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
+			@Override
+			public int compare(ScoreDoc s1, ScoreDoc s2) {
+				if (s1.score < s2.score)
+					return -1;
+				else if (s1.score > s2.score)
+					return 1;
+				else
+					return 0;
+			
+			}
+		}));
+		
+		return resultSet;
+	}
+
+	public List<ScoreDoc> orResults(List<List<ScoreDoc>> r) {
+		
+		if (r.size() == 0)
+			return new ArrayList<ScoreDoc>();
+		else if (r.size() == 1) 
+			return r.get(0);
+		
+		List<ScoreDoc> resultSet = r.get(0);
+				
+		for (int j=1; j<r.size(); j++) {
+			resultSet = orResults(resultSet, r.get(j));
+		}
+		
+		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
+			@Override
+			public int compare(ScoreDoc s1, ScoreDoc s2) {
+				if (s1.score < s2.score)
+					return -1;
+				else if (s1.score > s2.score)
+					return 1;
+				else
+					return 0;
+			
+			}
+		}));
+		
+		return resultSet;
+	}
+
 	public void boostScores(List<ScoreDoc> hits, float boostValue) {
 		for (ScoreDoc doc : hits) {
 			doc.score *= boostValue;

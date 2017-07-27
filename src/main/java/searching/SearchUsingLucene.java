@@ -3,6 +3,7 @@ package main.java.searching;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,12 +11,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DoublePoint;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
@@ -43,6 +51,56 @@ public class SearchUsingLucene {
 		return null;
 	}
 
+	//---------- Build Queries --------------
+	
+	public Query buildTermQuery(String field, String termText) {
+		Query tq = new TermQuery(new Term(field, termText));
+		return tq;
+	}
+	
+	public Query buildPhraseQuery(List<String> field, List<List<String>> terms) {
+		PhraseQuery.Builder builder = new PhraseQuery.Builder();
+		for (int i=0;i<field.size();i++) {
+			for (int j=0;j<terms.get(i).size();j++) {
+				builder.add(new Term(field.get(i), terms.get(i).get(j)));
+			}
+		}
+		Query query = builder.build();
+		return query;
+	}
+	
+	public Query buildTermRangeQuery(String field, String lower, String upper, boolean includeLower, boolean includeUpper) {
+		Query query = TermRangeQuery.newStringRange(field, lower, upper, includeLower, includeUpper);
+		return query;
+	}
+	
+	public Query buildDoubleRangeQuery(String field, Double lower, Double upper) {
+		Query query = DoublePoint.newRangeQuery(field, lower, upper);
+		return query;
+	}
+	
+	public Query buildLongRangeQuery(String field, Long lower, Long upper) {
+		Query query = LongPoint.newRangeQuery(field, lower, upper);
+		return query;
+	}
+	
+	public Query buildBooleanQuery(List<Query> queries, List<BooleanClause.Occur> clauses) {
+		
+		if (queries.size() != clauses.size())
+			return null;
+		
+		BooleanQuery.Builder builder = new BooleanQuery.Builder();
+		
+		for (int i=0; i<queries.size(); i++) {
+			builder.add(queries.get(i), clauses.get(i));
+		}
+		
+		BooleanQuery query = builder.build();
+		return query;
+	}
+	
+	
+	
 	@SuppressWarnings("finally")
 	public List<ScoreDoc> searchTerm(String field, String termText, int limit, float boostValue) {
 		
@@ -66,6 +124,9 @@ public class SearchUsingLucene {
 			return resultSet;
 		}
 	}
+	
+	
+	//------------ Merge ResultSets Manually --------------
 	
 	public List<ScoreDoc> andResults(List<ScoreDoc> r1, List<ScoreDoc> r2) {
 		
@@ -205,9 +266,55 @@ public class SearchUsingLucene {
 		return resultSet;
 	}
 
+	//-------- Boost Document Scores -------------
+	
 	public void boostScores(List<ScoreDoc> hits, float boostValue) {
 		for (ScoreDoc doc : hits) {
 			doc.score *= boostValue;
+		}
+	}
+	
+	//-------- Run Query & Return the results ---------
+
+	public List<ScoreDoc> runQuery(Query query) {
+		return runQuery(query, Integer.MAX_VALUE, 1);
+	}
+
+	public List<ScoreDoc> runQuery(Query query, int limitDocuments) {
+		return runQuery(query, limitDocuments, 1);
+	}
+	
+	@SuppressWarnings("finally")
+	public List<ScoreDoc> runQuery(Query query, int limitDocuments, int boostValue) {
+		TopDocs results = null;
+		ScoreDoc[] hits = null;
+		List<ScoreDoc> resultSet = null;
+		try {
+			results = searcher.search(query, limitDocuments);
+			hits = results.scoreDocs;
+			resultSet = new ArrayList<ScoreDoc>(Arrays.asList(hits));
+			
+			if (boostValue != 1)
+				boostScores(resultSet, boostValue);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			return resultSet;
+		}
+	}
+	
+	//--------- Print the documents in a ScoreDoc Array ---------
+	
+	public void printDocuments(List<ScoreDoc> hits, List<String> fields) {
+		for (ScoreDoc d : hits) {
+			for (String f : fields) {
+				Document doc = this.getDoc(d.doc);
+				System.out.println(f + ": " + doc.get(f));
+			}
+			System.out.println("--------------------------");
 		}
 	}
 	

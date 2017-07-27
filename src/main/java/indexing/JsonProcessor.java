@@ -21,14 +21,14 @@ public class JsonProcessor {
 	
 	String filename;
 	IndexUsingLucene li;
-	IndexUsingSolr solr;
+//	IndexUsingSolr solr;
 	
 	public JsonProcessor (String filename) {
 		this.filename = filename;
 		li = new IndexUsingLucene();
-		solr = new IndexUsingSolr(main.java.constants.Constants.solrHost, 
-								  main.java.constants.Constants.solrPort,
-								  main.java.constants.Constants.solrReviewsCore);
+//		solr = new IndexUsingSolr(main.java.constants.Constants.solrHost, 
+//								  main.java.constants.Constants.solrPort,
+//								  main.java.constants.Constants.solrReviewsCore);
 	}
 	
 	public void index() {
@@ -63,13 +63,13 @@ public class JsonProcessor {
 				
 				li.updateDocument(doc, t);
 				
-				SolrInputDocument solrDoc = createSolrDocument(r);
-				solr.addDocument(solrDoc);
+//				SolrInputDocument solrDoc = createSolrDocument(r);
+//				solr.addDocument(solrDoc);
 			}
 			
 			li.close();
-			solr.commit();
-			solr.close();
+//			solr.commit();
+//			solr.close();
 			br.close();
 		}
 		catch(Exception e){
@@ -80,18 +80,23 @@ public class JsonProcessor {
 	public Document createLuceneDocument(Review r) {
 
 		Document doc = new Document();
-		doc.add(new StringField("docID", r.docID, Field.Store.YES));
-		doc.add(new StringField("rID", r.rID, Field.Store.YES));
-		doc.add(new StringField("rName", r.rName, Field.Store.YES));
-		doc.add(new TextField("rSummary", r.rSummary, Field.Store.YES));
+		
+		doc.add(new Field("docID", r.docID, StringField.TYPE_NOT_STORED));
+		doc.add(new Field("rID", r.rID, StringField.TYPE_STORED));
+		doc.add(new Field("rName", r.rName, TextField.TYPE_STORED));
+		doc.add(new Field("rSummary", r.rSummary, TextField.TYPE_STORED));
+		
 		doc.add(new LongPoint("rTime", r.rTime));
 		doc.add(new DoublePoint("rStars", r.rStars));
 		
 		FieldType rText = new FieldType();
-		rText.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+		rText.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
+		rText.setStoreTermVectors(true);
+		rText.setStoreTermVectorOffsets(true);
+		rText.setStoreTermVectorPayloads(true);
+		rText.setStoreTermVectorPositions(true);
 		rText.setTokenized(true);
 		rText.setStored(true);
-		rText.setStoreTermVectors(true);
 
 		doc.add(new Field("rText", r.rText, rText));
 		

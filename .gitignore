@@ -20,3 +20,6 @@ src/main/index
 
 # Bin Files #
 bin
+
+# Gradle #
+gradle

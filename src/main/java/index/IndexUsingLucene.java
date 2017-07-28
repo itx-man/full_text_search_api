@@ -1,4 +1,4 @@
-package main.java.indexing;
+package index;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -56,3 +56,4 @@ public class IndexUsingLucene {
 	}
 
 }
+

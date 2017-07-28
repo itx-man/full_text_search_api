@@ -1,4 +1,4 @@
-package main.java.searching;
+package search;
 
 import java.io.IOException;
 import java.nio.file.Paths;

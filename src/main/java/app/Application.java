@@ -1,5 +1,6 @@
-package main.java.indexing;
+package app;
 
+import dataProcessor.ReviewProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,21 +9,21 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import main.java.searching.SearchUsingLucene;
+import search.SearchUsingLucene;
 
 public class Application {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 				
-//		JsonProcessor jp = new JsonProcessor("bookReviews.json");
-//		long start = System.nanoTime();
-//		jp.index();
-//		long stop = System.nanoTime();
-//		long total = (stop - start) / (long) Math.pow(10, 9);
-//		System.out.println("Indexed all Documents in " + (total) + " seconds.");
+		ReviewProcessor proc = new ReviewProcessor("bookReviews.json");
+		long start = System.nanoTime();
+		proc.index();
+		long stop = System.nanoTime();
+		long total = (stop - start) / (long) Math.pow(10, 9);
+		System.out.println("Indexed all Documents in " + (total) + " seconds.");
 		
-		SearchUsingLucene s = new SearchUsingLucene(main.java.constants.Constants.indexPath);
+		SearchUsingLucene s = new SearchUsingLucene(constants.Constants.reviewIndexPath);
 		
 		List<List<ScoreDoc>> results = new ArrayList<>();
 		

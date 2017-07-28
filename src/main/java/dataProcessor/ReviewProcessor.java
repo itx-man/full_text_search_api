@@ -1,5 +1,7 @@
-package main.java.indexing;
+package dataProcessor;
 
+import index.IndexUsingLucene;
+import objects.Review;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -15,15 +17,15 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.Term;
-import org.apache.solr.common.SolrInputDocument;
+//import org.apache.solr.common.SolrInputDocument;
 
-public class JsonProcessor {
+public class ReviewProcessor {
 	
 	String filename;
 	IndexUsingLucene li;
 //	IndexUsingSolr solr;
 	
-	public JsonProcessor (String filename) {
+	public ReviewProcessor (String filename) {
 		this.filename = filename;
 		li = new IndexUsingLucene();
 //		solr = new IndexUsingSolr(main.java.constants.Constants.solrHost, 
@@ -35,10 +37,10 @@ public class JsonProcessor {
 		
 		try {
 			
-			BufferedReader br = new BufferedReader(new FileReader(main.java.constants.Constants.filePath + this.filename));
+			BufferedReader br = new BufferedReader(new FileReader(constants.Constants.filePath + this.filename));
 			String json;
 			JSONParser par = new JSONParser();
-			li.initIndexWriter(main.java.constants.Constants.indexPath);
+			li.initIndexWriter(constants.Constants.reviewIndexPath);
 			
 			while ((json = br.readLine()) != null && !json.equals("")) {
 				
@@ -104,17 +106,17 @@ public class JsonProcessor {
 		
 	}
 	
-	public SolrInputDocument createSolrDocument(Review r) {
-		
-		SolrInputDocument doc = new SolrInputDocument();
-		doc.addField("docID", r.docID);
-		doc.addField("rID", r.rID);
-		doc.addField("rName", r.rName);
-		doc.addField("rSummary", r.rSummary);
-		doc.addField("rText", r.rText);
-		doc.addField("rTime", r.rTime);
-		doc.addField("rStars", r.rStars);
-		
-		return doc;
-	}
+//	public SolrInputDocument createSolrDocument(Review r) {
+//		
+//		SolrInputDocument doc = new SolrInputDocument();
+//		doc.addField("docID", r.docID);
+//		doc.addField("rID", r.rID);
+//		doc.addField("rName", r.rName);
+//		doc.addField("rSummary", r.rSummary);
+//		doc.addField("rText", r.rText);
+//		doc.addField("rTime", r.rTime);
+//		doc.addField("rStars", r.rStars);
+//		
+//		return doc;
+//	}
 }

@@ -1,14 +1,14 @@
-package main.java.indexing;
+package objects;
 
 public class Review {
 
-	String docID;
-	String rID;
-	String rName;
-	String rSummary;
-	String rText;
-	Long rTime;				
-	Double rStars;
+	public String docID;
+	public String rID;
+	public String rName;
+	public String rSummary;
+	public String rText;
+	public Long rTime;				
+	public Double rStars;
 	
 	public Review(String docID, String rID, String rName, String rSummary, String rText, Long rTime, Double rStars) {
 		this.docID = docID;

@@ -29,18 +29,18 @@ import org.apache.lucene.store.FSDirectory;
 
 public class SearchUsingLucene {
 
-	IndexReader reader; 
+	IndexReader reader;
 	IndexSearcher searcher;
-	
+
 	public SearchUsingLucene(String indexPath) {
 		try {
 			reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}
 	    searcher = new IndexSearcher(reader);
 	}
-	
+
 	public Document getDoc(int docID) {
 		try {
 			return searcher.doc(docID);
@@ -52,12 +52,12 @@ public class SearchUsingLucene {
 	}
 
 	//---------- Build Queries --------------
-	
+
 	public Query buildTermQuery(String field, String termText) {
 		Query tq = new TermQuery(new Term(field, termText));
 		return tq;
 	}
-	
+
 	public Query buildPhraseQuery(List<String> field, List<List<String>> terms) {
 		PhraseQuery.Builder builder = new PhraseQuery.Builder();
 		for (int i=0;i<field.size();i++) {
@@ -68,82 +68,56 @@ public class SearchUsingLucene {
 		Query query = builder.build();
 		return query;
 	}
-	
+
 	public Query buildTermRangeQuery(String field, String lower, String upper, boolean includeLower, boolean includeUpper) {
 		Query query = TermRangeQuery.newStringRange(field, lower, upper, includeLower, includeUpper);
 		return query;
 	}
-	
+
 	public Query buildDoubleRangeQuery(String field, Double lower, Double upper) {
 		Query query = DoublePoint.newRangeQuery(field, lower, upper);
 		return query;
 	}
-	
+
 	public Query buildLongRangeQuery(String field, Long lower, Long upper) {
 		Query query = LongPoint.newRangeQuery(field, lower, upper);
 		return query;
 	}
-	
+
 	public Query buildBooleanQuery(List<Query> queries, List<BooleanClause.Occur> clauses) {
-		
+
 		if (queries.size() != clauses.size())
 			return null;
-		
+
 		BooleanQuery.Builder builder = new BooleanQuery.Builder();
-		
+
 		for (int i=0; i<queries.size(); i++) {
 			builder.add(queries.get(i), clauses.get(i));
 		}
-		
+
 		BooleanQuery query = builder.build();
 		return query;
 	}
-	
-	
-	
-	@SuppressWarnings("finally")
-	public List<ScoreDoc> searchTerm(String field, String termText, int limit, float boostValue) {
-		
-		TermQuery tq = new TermQuery(new Term(field, termText));
-		TopDocs results = null;
-		ScoreDoc[] hits = null;
-		try {
-			results = searcher.search(tq, limit);
-			hits = results.scoreDocs;			
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		finally {
-			List<ScoreDoc> resultSet = new ArrayList<ScoreDoc>();
-			for (ScoreDoc s: hits)
-				resultSet.add(s);
-			
-			boostScores(resultSet, boostValue);
-			
-			return resultSet;
-		}
-	}
-	
-	
+
+
 	//------------ Merge ResultSets Manually --------------
-	
+
 	public List<ScoreDoc> andResults(List<ScoreDoc> r1, List<ScoreDoc> r2) {
-		
+
 		Map<Integer, Float> m = new HashMap<>();
 		List<ScoreDoc> resultSet = new ArrayList<>();
-		
+
 		if (r1.size() > r2.size()) {
 			List<ScoreDoc> t = r1;
 			r1 = r2;
 			r2 = t;
 		}
-		
-		
+
+
 		for (int i=0; i<r1.size(); i++) {
 			m.put(r1.get(i).doc, r1.get(i).score);
 		}
-		
+
 		for (int i=0; i<r2.size(); i++) {
 			if (m.containsKey(r2.get(i).doc)) {
 				ScoreDoc match = r2.get(i);
@@ -151,7 +125,7 @@ public class SearchUsingLucene {
 				resultSet.add(match);
 			}
 		}
-		
+
 		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
 			@Override
 			public int compare(ScoreDoc s1, ScoreDoc s2) {
@@ -161,26 +135,26 @@ public class SearchUsingLucene {
 					return 1;
 				else
 					return 0;
-			
+
 			}
 		}));
-		
+
 		return resultSet;
 	}
-	
+
 	public List<ScoreDoc> andResults(List<List<ScoreDoc>> r) {
-		
+
 		if (r.size() == 0)
 			return new ArrayList<ScoreDoc>();
-		else if (r.size() == 1) 
+		else if (r.size() == 1)
 			return r.get(0);
-		
+
 		List<ScoreDoc> resultSet = r.get(0);
-				
+
 		for (int j=1; j<r.size(); j++) {
 			resultSet = andResults(resultSet, r.get(j));
 		}
-		
+
 		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
 			@Override
 			public int compare(ScoreDoc s1, ScoreDoc s2) {
@@ -190,37 +164,67 @@ public class SearchUsingLucene {
 					return 1;
 				else
 					return 0;
-			
+
 			}
 		}));
-		
+
 		return resultSet;
 	}
-	
+
+	public List<ScoreDoc> andResults(List<List<ScoreDoc>> r, int limit) {
+
+		List<ScoreDoc> result = andResults(r);
+		if (result.size() > limit) {
+			return result.subList(0, limit);
+		}
+		else
+			return result;
+
+	}
+
+	public List<ScoreDoc> andQueries(List<Query> q) {
+
+		List<List<ScoreDoc>> result = new ArrayList<>();
+		for (int i=0; i<q.size(); i++) {
+			result.add(this.runQuery(q.get(i)));
+		}
+
+		return this.andResults(result);
+	}
+
+	public List<ScoreDoc> andQueries(List<Query> q, int limit) {
+
+		List<ScoreDoc> result = andQueries(q);
+		if (result.size() <= limit)
+			return result;
+		else
+			return result.subList(0, limit);
+	}
+
 	public List<ScoreDoc> orResults(List<ScoreDoc> r1, List<ScoreDoc> r2) {
-		
+
 		Map<Integer, Float> m = new HashMap<>();
 		List<ScoreDoc> resultSet = new ArrayList<>();
-		
+
 		if (r1.size() > r2.size()) {
 			List<ScoreDoc> t = r1;
 			r1 = r2;
 			r2 = t;
 		}
-		
+
 		for (int i=0; i<r1.size(); i++) {
 			m.put(r1.get(i).doc, r1.get(i).score);
 		}
-		
+
 		for (int i=0; i<r2.size(); i++) {
 			m.put(r2.get(i).doc, m.getOrDefault(r2.get(i).doc, (float) 0) + r2.get(i).score);
 		}
-		
+
 		for (Map.Entry<Integer, Float> e  : m.entrySet()) {
 			ScoreDoc s = new ScoreDoc(e.getKey(), e.getValue());
 			resultSet.add(s);
 		}
-		
+
 		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
 			@Override
 			public int compare(ScoreDoc s1, ScoreDoc s2) {
@@ -230,26 +234,48 @@ public class SearchUsingLucene {
 					return 1;
 				else
 					return 0;
-			
+
 			}
 		}));
-		
+
 		return resultSet;
 	}
 
-	public List<ScoreDoc> orResults(List<List<ScoreDoc>> r) {
+	public List<ScoreDoc> orResults(List<ScoreDoc> r1, List<ScoreDoc> r2, int limit) {
+
+		List<ScoreDoc> resultSet = new ArrayList<>(); 
+		resultSet = this.orResults(r1, r2);
+		if (resultSet.size() < limit)
+			return resultSet;
+		else
+			return resultSet.subList(0, limit);
 		
+	}
+	
+	public List<ScoreDoc> andResults(List<ScoreDoc> r1, List<ScoreDoc> r2, int limit) {
+
+		List<ScoreDoc> resultSet = new ArrayList<>(); 
+		resultSet = this.andResults(r1, r2);
+		if (resultSet.size() < limit)
+			return resultSet;
+		else
+			return resultSet.subList(0, limit);
+		
+	}
+	
+	public List<ScoreDoc> orResults(List<List<ScoreDoc>> r) {
+
 		if (r.size() == 0)
 			return new ArrayList<ScoreDoc>();
-		else if (r.size() == 1) 
+		else if (r.size() == 1)
 			return r.get(0);
-		
+
 		List<ScoreDoc> resultSet = r.get(0);
-				
+
 		for (int j=1; j<r.size(); j++) {
 			resultSet = orResults(resultSet, r.get(j));
 		}
-		
+
 		Collections.sort(resultSet, Collections.reverseOrder(new Comparator<ScoreDoc>() {
 			@Override
 			public int compare(ScoreDoc s1, ScoreDoc s2) {
@@ -259,21 +285,62 @@ public class SearchUsingLucene {
 					return 1;
 				else
 					return 0;
-			
+
 			}
 		}));
-		
+
 		return resultSet;
 	}
 
-	//-------- Boost Document Scores -------------
+	public List<ScoreDoc> orQueries(List<Query> q) {
+
+		List<List<ScoreDoc>> result = new ArrayList<>();
+		for (int i=0; i<q.size(); i++) {
+			result.add(this.runQuery(q.get(i)));
+		}
+
+		return this.orResults(result);
+	}
+
+	public List<ScoreDoc> orQueries(List<Query> q, List<Integer> boost) {
+
+		List<List<ScoreDoc>> result = new ArrayList<>();
+		if (q.size() != boost.size())
+			return (new ArrayList<ScoreDoc>());
+		
+		for (int i=0; i<q.size(); i++) {
+			result.add(this.runQuery(q.get(i), Integer.MAX_VALUE, boost.get(i)));
+		}
+
+		return this.orResults(result);
+	}
 	
+	public List<ScoreDoc> orQueries(List<Query> q, int limit) {
+
+		List<ScoreDoc> result = orQueries(q);
+		if (result.size() <= limit)
+			return result;
+		else
+			return result.subList(0, limit);
+	}
+
+	public List<ScoreDoc> orQueries(List<Query> q, List<Integer> boost, int limit) {
+
+		List<ScoreDoc> result = orQueries(q, boost);
+		if (result.size() <= limit)
+			return result;
+		else
+			return result.subList(0, limit);
+	}
+	
+	//-------- Boost Document Scores -------------
+
 	public void boostScores(List<ScoreDoc> hits, float boostValue) {
 		for (ScoreDoc doc : hits) {
 			doc.score *= boostValue;
 		}
 	}
-	
+
 	//-------- Run Query & Return the results ---------
 
 	public List<ScoreDoc> runQuery(Query query) {
@@ -283,7 +350,7 @@ public class SearchUsingLucene {
 	public List<ScoreDoc> runQuery(Query query, int limitDocuments) {
 		return runQuery(query, limitDocuments, 1);
 	}
-	
+
 	@SuppressWarnings("finally")
 	public List<ScoreDoc> runQuery(Query query, int limitDocuments, int boostValue) {
 		TopDocs results = null;
@@ -293,10 +360,10 @@ public class SearchUsingLucene {
 			results = searcher.search(query, limitDocuments);
 			hits = results.scoreDocs;
 			resultSet = new ArrayList<ScoreDoc>(Arrays.asList(hits));
-			
+
 			if (boostValue != 1)
 				boostScores(resultSet, boostValue);
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -305,10 +372,12 @@ public class SearchUsingLucene {
 			return resultSet;
 		}
 	}
-	
+
 	//--------- Print the documents in a ScoreDoc Array ---------
-	
+
 	public void printDocuments(List<ScoreDoc> hits, List<String> fields) {
+		if (hits == null)
+			return;
 		for (ScoreDoc d : hits) {
 			for (String f : fields) {
 				Document doc = this.getDoc(d.doc);
@@ -317,5 +386,5 @@ public class SearchUsingLucene {
 			System.out.println("--------------------------");
 		}
 	}
-	
+
 }

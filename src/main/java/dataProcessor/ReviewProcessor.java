@@ -13,6 +13,7 @@ import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
@@ -83,13 +84,15 @@ public class ReviewProcessor {
 
 		Document doc = new Document();
 		
-		doc.add(new Field("docID", r.docID, StringField.TYPE_NOT_STORED));
-		doc.add(new Field("rID", r.rID, StringField.TYPE_STORED));
-		doc.add(new Field("rName", r.rName, TextField.TYPE_STORED));
-		doc.add(new Field("rSummary", r.rSummary, TextField.TYPE_STORED));
+		doc.add(new Field("docID", r.getrDocID(), StringField.TYPE_STORED));
+		doc.add(new Field("rID", r.getrID(), StringField.TYPE_STORED));
+		doc.add(new Field("rName", r.getrName(), TextField.TYPE_STORED));
+		doc.add(new Field("rSummary", r.getrSummary(), TextField.TYPE_STORED));
 		
-		doc.add(new LongPoint("rTime", r.rTime));
-		doc.add(new DoublePoint("rStars", r.rStars));
+		doc.add(new LongPoint("rTime", r.getrTime()));
+		doc.add(new StoredField("rTime", r.getrTime()));
+		doc.add(new DoublePoint("rStars", r.getrStars()));
+		doc.add(new StoredField("rStars", r.getrStars()));
 		
 		FieldType rText = new FieldType();
 		rText.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
@@ -100,7 +103,7 @@ public class ReviewProcessor {
 		rText.setTokenized(true);
 		rText.setStored(true);
 
-		doc.add(new Field("rText", r.rText, rText));
+		doc.add(new Field("rText", r.getrText(), rText));
 		
 		return doc;
 		

@@ -23,5 +23,12 @@ bin
 
 # Gradle #
 gradle
-/.gradle/
+.gradle/
 /build/
+
+# Webapp Files 
+web/node_modules
+
+# Scratcpad Java File #
+*ScratchPad.java
+

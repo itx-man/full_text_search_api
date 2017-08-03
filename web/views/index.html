@@ -1,4 +1,3 @@
-<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -8,12 +7,14 @@
 </head>
 
 <body>
-  <div class="container" align="center">
+  <div class="container">
     <h4 class="center-align">Full Text Search</h4>
-    <input type="text" id="searchBox" placeholder="Search for reviews..." />
-    <input type="button" id="button" value="Search" onclick="showResults()">
+    <input type="text" id="searchBox" placeholder="Search for reviews..." onkeyup="showResults()"/>
+    <!-- <input type="button" id="button" value="Search" onclick="showResults()"> -->
     <br><br>
     <ul id="reviews" class="collection with-header"> </ul>
+
+    </div>
   </div>
 
   <script>
@@ -23,13 +24,19 @@
       // console.log(url);
 
 
-
       $.getJSON(url, function(data) {
         let container = document.getElementById('reviews');
+        container.innerHTML = '';
         for (var i=0; i<data.length; i++) {
+
           var lihead = document.createElement("li");
           lihead.setAttribute("class", "collection-header");
-          lihead.appendChild(document.createTextNode(data[i]["rSummary"] + " | Rating: " + data[i]["rStars"] + " / 5.0" ));
+          lihead.innerHTML = lihead.innerHTML + "<b>";
+          var header = document.createElement("b");
+          header.innerHTML = data[i]["rSummary"] + " | Rating: " + data[i]["rStars"] + " / 5.0";
+          // lihead.appendChild(document.createTextNode(data[i]["rSummary"] + " | Rating: " + data[i]["rStars"] + " / 5.0" ));
+          lihead.appendChild(header);
+          lihead.innerHTML = lihead.innerHTML + "</b>";
           container.append(lihead);
 
           var liitem = document.createElement("li");

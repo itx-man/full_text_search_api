@@ -1,6 +1,6 @@
 package objects;
 
-public class Result {
+public class JsonReview {
 
 	String docID;
 	String rID;
@@ -10,7 +10,7 @@ public class Result {
 	String rTime;				
 	String rStars;
 	
-	public Result (String docID, String rID, String rName, String rSummary, String rText, String rTime, String rStars) {
+	public JsonReview (String docID, String rID, String rName, String rSummary, String rText, String rTime, String rStars) {
 		this.docID = docID;
 		this.rID = rID;
 		this.rName = rName;

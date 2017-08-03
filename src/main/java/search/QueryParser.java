@@ -14,6 +14,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 
+import objects.QueryDetails;
+
 public class QueryParser {
 	SearchUsingLucene searcher;
 	
@@ -70,9 +72,21 @@ public class QueryParser {
 		return query;
 	}
 	
-	public List<ScoreDoc> getResults(String q, String r, int resultSize) {
-		return searcher.andResults(this.processTermFilters(q, Integer.MAX_VALUE), 
-				this.processRangeFilters(r, Integer.MAX_VALUE), resultSize);
+	public List<ScoreDoc> getResults(QueryDetails qd, String q, String r, int resultSize, int start) {
+		List<ScoreDoc> result = searcher.andResults(this.processTermFilters(q, Integer.MAX_VALUE), 
+				this.processRangeFilters(r, Integer.MAX_VALUE), Integer.MAX_VALUE);
+		
+		qd.setTotalMatchedDocuments(result.size());
+		qd.setStartIndex(start);
+		if (result.size() < start) {
+			qd.setReturnedDocuments(0);
+			return new ArrayList<ScoreDoc>();
+		}
+		else {
+			qd.setReturnedDocuments(Math.min(result.size() - start, resultSize));
+			return result.subList(start, Math.min(result.size(), start + resultSize));
+		}
+			
 	}
 	
 	public List<ScoreDoc> processTermFilters(String q, int resultSize) {

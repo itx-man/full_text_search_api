@@ -26,9 +26,10 @@
       // console.log(url);
 
 
-      $.getJSON(url, function(data) {
+      $.getJSON(url, function(response) {
         let container = document.getElementById('reviews');
         container.innerHTML = '';
+        let data = response["data"];
         for (var i=0; i<data.length; i++) {
 
           var lihead = document.createElement("li");

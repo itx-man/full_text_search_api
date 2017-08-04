@@ -31,12 +31,13 @@ public class QueryParser {
 		return tq;
 	}
 
-	public Query buildPhraseQuery(List<String> field, List<List<String>> terms) {
+	public Query buildPhraseQuery(String field, String terms) {
+		
+		String nterms = terms.replace("\"", "");
 		PhraseQuery.Builder builder = new PhraseQuery.Builder();
-		for (int i=0;i<field.size();i++) {
-			for (int j=0;j<terms.get(i).size();j++) {
-				builder.add(new Term(field.get(i), terms.get(i).get(j)));
-			}
+		String[] tokens = nterms.split(" ");
+		for (int i=0;i<tokens.length;i++) {
+				builder.add(new Term(field, tokens[i]));
 		}
 		Query query = builder.build();
 		return query;
@@ -89,6 +90,7 @@ public class QueryParser {
 			
 	}
 	
+	//TODO handle no space between boost value and next term
 	public List<ScoreDoc> processTermFilters(String q, int resultSize) {
 		String[] tokens = q.split("=");
 		List<Query> queries = new ArrayList<>();
@@ -98,26 +100,70 @@ public class QueryParser {
 			return new ArrayList<ScoreDoc>();
 		
 		for (int i=0; i< tokens.length; i++) {
+			
 			String field = tokens[i++];
-	
 			String[] v = tokens[i].split(" ");
+			StringBuilder termText = new StringBuilder("");
+			boolean isPhrase = false;
+			boolean phraseEnd = false;
+			int boostValue = 1;
+			
 			for (String vv : v) {
-				StringBuilder termText = new StringBuilder("");
-				String[] t = vv.split("%B");
+				
+				if (!isPhrase) 
+					termText = new StringBuilder("");
+				else
+					termText.append(" ");
+				
+				String[] t = vv.split("%B");	
 				if (t.length > 1) {
-					boostValues.add(Integer.valueOf(t[t.length-1]));
+					boostValue = Integer.valueOf(t[t.length-1]);
 					for (int j=0; j<t.length-1; j++) {
 						termText.append(t[j]);
+						if (termText.charAt(0) == '"') {
+							isPhrase = true;
+							phraseEnd = false;
+						}
+							
+						if (termText.charAt(termText.length()-1)  == '"') {
+							isPhrase = false;
+							phraseEnd = true;
+							break;
+						}
+					}
+					
+					if (isPhrase) {
+						isPhrase = false;
+						phraseEnd = true;
 					}
 				}
 				else {
-					boostValues.add(1);
 					for (int j=0; j<t.length; j++) {
 						termText.append(t[j]);
+						if (termText.charAt(0) == '"') {
+							isPhrase = true;
+							phraseEnd = false;
+						}
+							
+						if (termText.charAt(termText.length()-1)  == '"') {
+							isPhrase = false;
+							phraseEnd = true;
+							break;
+						}
 					}
 				}
-				Query quer = this.buildTermQuery(field, termText.toString());
-				queries.add(quer);
+				
+				if (phraseEnd && !isPhrase) {
+					queries.add(this.buildPhraseQuery(field, termText.toString()));
+					boostValues.add(boostValue);
+					phraseEnd = false;
+					boostValue = 1;
+				}
+				else if (!isPhrase) {
+					queries.add(this.buildTermQuery(field, termText.toString()));
+					boostValues.add(boostValue);
+					boostValue = 1;
+				}
 			}
 		}
 		

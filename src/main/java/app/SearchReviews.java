@@ -17,6 +17,8 @@ import objects.ResponseReview;
 @RestController
 public class SearchReviews {
 
+	InitDataLoad idl = new InitDataLoad("bookReviews.json");
+	
 	@RequestMapping("/search/reviews")
 	public ResponseReview search(@RequestParam(value="q", defaultValue="") String q, 
 								 @RequestParam(value="r", defaultValue="rStars=1:5") String r, 

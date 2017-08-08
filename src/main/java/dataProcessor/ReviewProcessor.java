@@ -4,6 +4,8 @@ import index.IndexUsingLucene;
 import objects.Review;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -37,8 +39,8 @@ public class ReviewProcessor {
 	public void index() {
 		
 		try {
-			
-			BufferedReader br = new BufferedReader(new FileReader(constants.Constants.filePath + this.filename));
+			InputStream in = this.getClass().getClassLoader().getResourceAsStream(filename);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String json;
 			JSONParser par = new JSONParser();
 			li.initIndexWriter(constants.Constants.reviewIndexPath);
